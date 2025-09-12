@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# Byte-compiled / caches
+*.egg
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+*.log
+
+# Jupyter
+.ipynb_checkpoints
+
+# Pytest / coverage
+.coverage
+*.cover
+.cache
+.pytest_cache/
+
+# VSCode / IDE settings
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# HuggingFace / Transformers cache
+~/.cache/
+huggingface/
