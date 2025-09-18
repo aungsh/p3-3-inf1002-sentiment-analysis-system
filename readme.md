@@ -2,21 +2,29 @@
 
 ## Installation Instructions
 
+In order to run the project, you need to have the following software installed on your machine:
+
+- [Node.js](https://nodejs.org/en/download/) (for Next.js frontend)
+- [Python](https://www.python.org/downloads/) (for FastAPI backend)
+- [Git](https://git-scm.com/downloads) (for version control)
+
+Both the frontend and backend servers need to be running simultaneously for the application to function correctly.
+
 ### Initialise Frontend NextJS server
 
-#### Change directory to frontend folder
+1. Change directory to frontend folder
 
 ```
 cd frontend
 ```
 
-#### Install node packages (only required for first instllation or updates to package.json)
+2. Install node packages (only required for first instllation or updates to package.json)
 
 ```
 npm install
 ```
 
-#### Run development server
+3. Run development server
 
 ```
 npm run dev
@@ -27,39 +35,39 @@ To view the web page, open `http://localhost:3000` in the browser.
 
 ### Initialise Backend FastAPI server
 
-#### Change directory to backend folder
+1. Change directory to backend folder
 
 ```
 cd backend
 ```
 
-#### Create virtual environment (only required for first instllation)
+2. Create virtual environment (only required for first instllation)
 
 ```
 python -m venv venv
 ```
 
-#### Activate virtual environment
+3. Activate virtual environment
 
-- On Windows:
+On Windows:
 
 ```
 venv\Scripts\activate
 ```
 
-- On macOS/Linux:
+On macOS/Linux:
 
 ```
 source venv/bin/activate
 ```
 
-#### Install python packages (only required for first instllation or updates to requirements.txt)
+4. Install python packages (only required for first instllation or updates to requirements.txt)
 
 ```
 pip install -r requirements.txt
 ```
 
-#### Run FastAPI server
+5. Run FastAPI server
 
 ```
 uvicorn main:app --reload --port 8000
