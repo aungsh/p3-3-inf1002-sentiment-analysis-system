@@ -44,7 +44,6 @@ cd backend
 2. Create virtual environment (only required for first instllation)
 
 ```
-python -m venv venv
 python3 -m venv venv
 ```
 
