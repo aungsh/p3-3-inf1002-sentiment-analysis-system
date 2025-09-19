@@ -1,35 +1,30 @@
+# backend/app/main.py
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from afinn import Afinn
 
-app = FastAPI()
+# Import routers
+from app.api import sentiment
+
+# Create FastAPI app
+app = FastAPI(
+    title="Sentiment Analysis API",
+    description="API backend for sentiment analysis project",
+    version="1.0.0",
+)
 
 # Allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production: restrict to frontend domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load AFINN (simple sentiment lexicon)
-afinn = Afinn()
+# Register routers
+app.include_router(sentiment.router, prefix="/sentiment", tags=["Sentiment"])
 
-class TextRequest(BaseModel):
-    text: str
-
-@app.post("/analyze")
-def analyze_sentiment(request: TextRequest):
-    score = afinn.score(request.text)
-
-    # Interpret score
-    if score > 0:
-        sentiment = "POSITIVE"
-    elif score < 0:
-        sentiment = "NEGATIVE"
-    else:
-        sentiment = "NEUTRAL"
-
-    return {"sentiment": sentiment, "score": score}
+# Health check endpoint
+@app.get("/", tags=["Health"])
+def root():
+    return {"status": "ok", "message": "Sentiment Analysis API running 🚀"}

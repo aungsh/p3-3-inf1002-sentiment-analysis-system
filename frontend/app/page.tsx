@@ -11,7 +11,7 @@ export default function Home() {
   const [result, setResult] = useState<SentimentResult | null>(null);
 
   const analyze = async () => {
-    const res = await fetch("http://localhost:8000/analyze", {
+    const res = await fetch("http://localhost:8000/sentiment/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
