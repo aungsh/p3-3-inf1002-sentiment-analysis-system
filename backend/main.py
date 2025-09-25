@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import routers
 from app.api import sentiment
+from app.api import sliding_window_api
 
 # Create FastAPI app
 app = FastAPI(
@@ -23,6 +24,7 @@ app.add_middleware(
 
 # Register routers
 app.include_router(sentiment.router, prefix="/sentiment", tags=["Sentiment"])
+app.include_router(sliding_window_api.router, prefix="/sliding_window_api", tags=["Sliding_window"])
 
 # Health check endpoint
 @app.get("/", tags=["Health"])
