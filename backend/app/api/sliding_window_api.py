@@ -17,6 +17,6 @@ def sliding_window(request: TextRequest):
     response=httpx.post("http://localhost:8000/sentiment/analyze_sentiment_per_sentence", json={"text": request.text})
     #print('this is my response:')
     #print(response.json())
-    results = afinn_sliding_window(response.json())
+    results = afinn_sliding_window(response.json()["results"])
     #return {"results": [{"sentence": s, "sentiment": sentiment, "score": score} for s, sentiment, score in results]}
     return results
