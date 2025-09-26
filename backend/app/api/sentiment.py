@@ -19,6 +19,4 @@ def analyze_sentiment(request: TextRequest):
 @router.post("/analyze_sentiment_per_sentence")
 def analyze_sentiment_per_sentence(request: TextRequest):
     results = per_sentence_analysis(request.text)
-    #return {"results": [{"sentence": s, "sentiment": sentiment, "score": score} for s, sentiment, score in results]}
     return {"results": results}
-    #return {[{"sentence": s, "sentiment": sentiment, "score": score} for s, sentiment, score in results]}
