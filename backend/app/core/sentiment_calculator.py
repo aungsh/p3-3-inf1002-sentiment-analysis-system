@@ -87,6 +87,6 @@ def per_sentence_analysis(text: str):
     else:
         overall_sentiment = "NEUTRAL"
     
-    sentences_scores["overall"] = {"sentiment": overall_sentiment, "score": overall_score}
+    sentences_scores["overall"] = {"text": sentence, "sentiment": overall_sentiment, "score": overall_score}
     
     return sentences_scores
