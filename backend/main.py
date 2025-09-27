@@ -1,11 +1,8 @@
 # backend/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes import router
 
-# Import routers
-from app.api import sentiment
-from app.api import sliding_window_api
-from app.api import gemini_api
 # Create FastAPI app
 app = FastAPI(
     title="Sentiment Analysis API",
@@ -22,10 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
-app.include_router(sentiment.router, prefix="/sentiment", tags=["Sentiment"])
-app.include_router(sliding_window_api.router, prefix="/sliding_window_api", tags=["Sliding_window"])
-app.include_router(gemini_api.router, prefix="/gemini_api", tags=["gemini"])
+# Include API routes
+app.include_router(router)
 
 # Health check endpoint
 @app.get("/", tags=["Health"])
