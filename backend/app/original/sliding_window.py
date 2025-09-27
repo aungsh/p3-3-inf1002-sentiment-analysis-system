@@ -1,6 +1,6 @@
 from collections import deque
 
-#\backend\app\core\sliding_window.py
+#\backend\app\original\sliding_window.py
 def afinn_sliding_window(scored_sentences):
 
     # Extract data from input dict
@@ -8,8 +8,8 @@ def afinn_sliding_window(scored_sentences):
 
     # Error handling for edge cases
     if len(sentences) < 3:
-        best_positive = {'score': 0.0, 'text': "[INFO] Input too short to form sliding window of 3."}
-        best_negative = {'score': 0.0, 'text': "[INFO] Input too short to form sliding window of 3."}
+        best_positive = {'text': "[INFO] Input too short to form sliding window of 3.", 'score': 0.0}
+        best_negative = {'text': "[INFO] Input too short to form sliding window of 3.", 'score': 0.0}
         return best_positive, best_negative
 
     # Fixed size sliding window of 3 sentences
@@ -17,8 +17,8 @@ def afinn_sliding_window(scored_sentences):
     running_sum = 0
 
     # Dict for most positive/negative paragaphs + score
-    best_positive = {'score': float('-inf'), 'text': ""}
-    best_negative = {'score': float('inf'), 'text': ""}
+    best_positive = {'text': "", 'score': float('-inf')}
+    best_negative = {'text': "", 'score': float('inf')}
 
     for sentence, score in sentences:
 
@@ -35,7 +35,7 @@ def afinn_sliding_window(scored_sentences):
             avg_score = running_sum / 3
             joined_text = " ".join(s[0] for s in window)
 
-            # assign paragraph & score to dictionary
+            # Assign paragraph & score to dictionary
             if avg_score > best_positive['score']:
                 best_positive['score'] = avg_score
                 best_positive['text'] = joined_text
