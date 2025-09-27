@@ -58,7 +58,7 @@ def analyze_sentiment_per_sentence(request: TextRequest):
 # @router.post("/sliding_window")
 # def sliding_window(request: TextRequest):
 #     sentence_results = per_sentence_analysis(request.text)
-#     window_results = sliding_windows(sentence_results)
+#     window_results = analyze_sliding_windows(sentence_results)
 #     return window_results
 
 # Extremes API
