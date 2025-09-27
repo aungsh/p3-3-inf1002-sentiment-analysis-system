@@ -1,10 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-
-# Import your core logic
-from app.core.gemini import analyze_sentiment_gemini
-from app.core.sentiment_calculator import analyze_text, per_sentence_analysis
-from app.core.sliding_window import afinn_sliding_window
+from app.services.utils import per_sentence_analysis, analyze_text, find_extremes, analyze_sliding_windows
+from app.services.gemini import analyze_sentiment_gemini
 
 router = APIRouter()
 
@@ -15,8 +12,14 @@ class TextRequest(BaseModel):
 # Gemini API
 @router.post("/gemini")
 def analyze_sentiment_gemini_api(request: TextRequest):
-    results = analyze_sentiment_gemini(request.text)
-    return results
+    sentiment, confidence = analyze_sentiment_gemini(request.text)
+    return {"sentiment": sentiment, "score": confidence}
+
+# example output
+# {
+#     "sentiment": "neutral", # POSITIVE, NEGATIVE, NEUTRAL
+#     "score": 0.7
+# }
 
 # Sentiment API
 @router.post("/sentiment/analyze")
@@ -24,14 +27,54 @@ def analyze_sentiment(request: TextRequest):
     sentiment, score = analyze_text(request.text)
     return {"sentiment": sentiment, "score": score}
 
+# example output
+# {
+#     "sentiment": "negative",
+#     "score": -3
+# }
+
 @router.post("/sentiment/analyze_sentiment_per_sentence")
 def analyze_sentiment_per_sentence(request: TextRequest):
     results = per_sentence_analysis(request.text)
-    return {"results": results}
+    return results
+
+# example output
+# [
+#     {
+#         "sentence": "I am sad",
+#         "score": -2
+#     },
+#     {
+#         "sentence": "I am neutral",
+#         "score": 0
+#     },
+#     {
+#         "sentence": "I am chilling",
+#         "score": -1
+#     }
+# ]
 
 # Sliding Window API
-@router.post("/sliding_window")
-def sliding_window(request: TextRequest):
-    per_sentence = per_sentence_analysis(request.text)
-    results = afinn_sliding_window(per_sentence)
-    return results
+# @router.post("/sliding_window")
+# def sliding_window(request: TextRequest):
+#     results = analyze_sliding_windows(request.text)
+#     return results
+
+# Extremes API
+@router.post("/extremes")
+def extremes(request: TextRequest):
+    sentence_results = per_sentence_analysis(request.text) 
+    extremes_results = find_extremes(sentence_results)      
+    return extremes_results
+
+# example output
+# {
+#     "most_positive": {
+#         "sentence": "I am neutral",
+#         "score": 0
+#     },
+#     "most_negative": {
+#         "sentence": "I am sad",
+#         "score": -2
+#     }
+# }
