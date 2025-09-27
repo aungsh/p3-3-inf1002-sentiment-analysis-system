@@ -21,10 +21,10 @@ def analyze_sentiment_gemini(text: str):
 
         result = response.text.strip()
         sentiment, confidence = result.split(',')
-        sentiment = sentiment.strip().upper()
+        sentiment = sentiment.strip().lower()
         confidence = float(confidence.strip())
-        if sentiment not in ['POSITIVE', 'NEGATIVE', 'NEUTRAL']:
-            sentiment = 'NEUTRAL'
+        if sentiment not in ['positive', 'negative', 'neutral']:
+            sentiment = 'neutral'
         if not (0 <= confidence <= 1):
             confidence = 0.5
     except Exception as e:
