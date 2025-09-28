@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Navigate and start backend
 echo "Setting up backend..."
 cd backend
