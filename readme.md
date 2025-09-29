@@ -23,10 +23,11 @@ On macOS/Linux:
 bash start.sh
 ```
 
-On Windows:
+On Windows (open a separate terminal for each command):
 
 ```
-start.bat
+frontend.bat
+backend.bat
 ```
 
 This script will set up and run both the frontend and backend servers.
