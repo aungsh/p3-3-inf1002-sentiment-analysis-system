@@ -39,12 +39,12 @@ def afinn_sliding_window(scored_sentences, k=3):
 
             # Assign paragraph & score to dictionary
             if avg_score > best_positive['score']:
-                best_positive['score'] = avg_score
+                best_positive['score'] = round(avg_score, 2)
                 best_positive['text'] = joined_text
                 best_positive['indices'] = (start_idx, end_idx)
 
             if avg_score < best_negative['score']:
-                best_negative['score'] = avg_score
+                best_negative['score'] = round(avg_score, 2)
                 best_negative['text'] = joined_text
                 best_negative['indices'] = (start_idx, end_idx)
 

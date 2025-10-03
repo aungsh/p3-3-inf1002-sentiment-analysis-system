@@ -1,10 +1,11 @@
 from typing import List, Dict, Tuple
 from app.services.sentiment import sentence_score, split_sentences, afinn_dict
+from collections import deque
 
-# Sentence-level analysis
-def per_sentence_analysis(text: str) -> List[Dict[str, int]]:
-      # Split text into sentences
-    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+# (Jason) Sentence-level analysis
+def per_sentence_analysis(text: str):
+    # Split text into sentences
+    sentences = split_sentences(text)
     
     # Analyze each sentence
     results = {}
@@ -14,18 +15,10 @@ def per_sentence_analysis(text: str) -> List[Dict[str, int]]:
             results[idx] = {"text": sentence, "sentiment": sentiment, "score": score}
     return results
 
-def analyze_text(text: str) -> Tuple[str, int]:
-    results = per_sentence_analysis(text)
-    total_score = sum(r["score"] for r in results)
-
-    if total_score > 0:
-        sentiment = "positive"
-    elif total_score < 0:
-        sentiment = "negative"
-    else:
-        sentiment = "neutral"
-
-    return sentiment, total_score
+def analyze_text(text: str):
+    score = sentence_score(text)
+    sentiment = "POSITIVE" if score > 0 else "NEGATIVE" if score < 0 else "NEUTRAL"
+    return sentiment, score
 
 def calculate_overall_score(text: str):
 
@@ -33,7 +26,7 @@ def calculate_overall_score(text: str):
         return {"overall_score": 0.0, "overall_sentiment": "NEUTRAL"}
     
     # Split into sentences
-    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    sentences = split_sentences(text)
     
     # Get scores per sentence
     scores = []
@@ -61,31 +54,65 @@ def calculate_overall_score(text: str):
         "overall_sentiment": sentiment
     }
 
-def find_extremes(results: List[Dict[str, int]]) -> Dict[str, Dict[str, int]]:
-    if not results:
-        return {"most_positive": None, "most_negative": None}
-    return {
-        "most_positive": max(results, key=lambda x: x["score"]),
-        "most_negative": min(results, key=lambda x: x["score"]),
-    }
+# (Aung) Module to find the most positive and most negative sentences based on their sentiment scores.
+def find_extremes(sentence_scores):
+    
+    # Get the most positive and most negative sentences.
+    if not sentence_scores:
+        return None, None
 
-# Sliding Window Analysis
-def sliding_window(seq: List[str], window_size: int) -> List[List[str]]:
-    return [seq[i:i+window_size] for i in range(len(seq) - window_size + 1)]
+    # Find the sentences with the highest and lowest scores
+    most_positive = max(sentence_scores.values(), key=lambda x: x["score"])
+    most_negative = min(sentence_scores.values(), key=lambda x: x["score"])
 
-def analyze_sliding_windows(text: str, window_size: int = 3) -> Dict[str, Dict]:
-    sentences = split_sentences(text)
-    windows = sliding_window(sentences, window_size)
+    return most_positive, most_negative
 
-    scored_windows = []
-    for window in windows:
-        score = sum(sentence_score(s, afinn_dict) for s in window)
-        scored_windows.append({"segment": " ".join(window), "score": score})
+# (Saad) Sliding Window Analysis
+def analyze_sliding_windows(scored_sentences, k=3):
 
-    if not scored_windows:
-        return {"most_positive_segment": None, "most_negative_segment": None}
+    # Extract data from input dict
+    sentences = [(data["text"], data["score"]) for key, data in scored_sentences.items() if key != "overall"]
 
-    return {
-        "most_positive_segment": max(scored_windows, key=lambda x: x["score"]),
-        "most_negative_segment": min(scored_windows, key=lambda x: x["score"]),
-    }
+    # Error handling for edge cases
+    if len(sentences) < k:
+        msg = f"[ERROR] Input must contain at least {k} sentences to form a sliding window."
+        return ({"text": msg, "score": 0.0, "indices": None}, {"text": msg, "score": 0.0, "indices": None})
+
+    # Fixed size sliding window of k sentences
+    window = deque(maxlen=k)
+    running_sum = 0
+
+    # Dict for most positive/negative paragraphs, score, sentence indices
+    best_positive = {'text': "", 'score': float('-inf'), "indices": None}
+    best_negative = {'text': "", 'score': float('inf'), "indices": None}
+
+    # Iterate through sentences with scores
+    for i, (sentence, score) in enumerate(sentences):
+
+        # Remove oldest score if window is full
+        if len(window) == k:
+            running_sum -= window[0][1]
+
+        # Populate window with tuples of sentence + score
+        window.append((sentence, score))
+        running_sum += score
+
+        # Save analyzed paragraph & avg score for window
+        if len(window) == k:
+            avg_score = running_sum / k
+            joined_text = " ".join(s[0] for s in window)
+            start_idx = i - k + 1
+            end_idx = i
+
+            # Assign paragraph & score to dictionary
+            if avg_score > best_positive['score']:
+                best_positive['score'] = round(avg_score, 2)
+                best_positive['text'] = joined_text
+                best_positive['indices'] = (start_idx, end_idx)
+
+            if avg_score < best_negative['score']:
+                best_negative['score'] = round(avg_score, 2)
+                best_negative['text'] = joined_text
+                best_negative['indices'] = (start_idx, end_idx)
+
+    return best_positive, best_negative
