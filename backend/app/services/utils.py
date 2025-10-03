@@ -16,7 +16,7 @@ def per_sentence_analysis(text: str):
     return results
 
 def analyze_text(text: str):
-    score = sentence_score(text)
+    score = sentence_score(text, afinn_dict)
     sentiment = "POSITIVE" if score > 0 else "NEGATIVE" if score < 0 else "NEUTRAL"
     return sentiment, score
 

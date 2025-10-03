@@ -55,21 +55,21 @@ def analyze_sentiment_per_sentence(request: TextRequest):
 # ]
 
 # Sliding Window API
-# @router.post("/sliding_window")
-# def sliding_window(request: TextRequest):
-#     sentence_results = per_sentence_analysis(request.text)
-#     window_results = analyze_sliding_windows(sentence_results)
-#     return window_results
+@router.post("/sliding_window")
+def sliding_window(request: TextRequest):
+    sentence_results = per_sentence_analysis(request.text)
+    window_results = analyze_sliding_windows(sentence_results)
+    return window_results
 
 # example output
 # {
 #     "best_positive": {
-#         "text": "I am neutral",
-#         "score": 0.00,
+#         "text": "I am good. very cool. nice",
+#         "score": 1.00,
 #         "indices": (3, 5) 
 #     },
 #     "best_negative": {
-#         "text": "I am sad",
+#         "text": "I am sad. this sucks. so bad",
 #         "score": -2.00,
 #         "indices": (0, 2)
 #     }
