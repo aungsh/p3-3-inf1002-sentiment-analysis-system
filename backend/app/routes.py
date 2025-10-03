@@ -61,6 +61,20 @@ def analyze_sentiment_per_sentence(request: TextRequest):
 #     window_results = analyze_sliding_windows(sentence_results)
 #     return window_results
 
+# example output
+# {
+#     "best_positive": {
+#         "text": "I am neutral",
+#         "score": 0.00,
+#         "indices": (3, 5) 
+#     },
+#     "best_negative": {
+#         "text": "I am sad",
+#         "score": -2.00,
+#         "indices": (0, 2)
+#     }
+# }
+
 # Extremes API
 @router.post("/extremes")
 def extremes(request: TextRequest):
