@@ -3,8 +3,16 @@ from app.services.sentiment import sentence_score, split_sentences, afinn_dict
 
 # Sentence-level analysis
 def per_sentence_analysis(text: str) -> List[Dict[str, int]]:
-    sentences = split_sentences(text)
-    return [{"sentence": s, "score": sentence_score(s, afinn_dict)} for s in sentences]
+      # Split text into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    
+    # Analyze each sentence
+    results = {}
+    for idx, sentence in enumerate(sentences):
+        if sentence:
+            sentiment, score = analyze_text(sentence)
+            results[idx] = {"text": sentence, "sentiment": sentiment, "score": score}
+    return results
 
 def analyze_text(text: str) -> Tuple[str, int]:
     results = per_sentence_analysis(text)
@@ -18,6 +26,40 @@ def analyze_text(text: str) -> Tuple[str, int]:
         sentiment = "neutral"
 
     return sentiment, total_score
+
+def calculate_overall_score(text: str):
+
+    if not text.strip():
+        return {"overall_score": 0.0, "overall_sentiment": "NEUTRAL"}
+    
+    # Split into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    
+    # Get scores per sentence
+    scores = []
+    for sentence in sentences:
+        if sentence:
+            _, score = analyze_text(sentence)
+            scores.append(score)
+    
+    if not scores:  # no valid sentences
+        return {"overall_score": 0.0, "overall_sentiment": "NEUTRAL"}
+    
+    # Average score per sentence
+    overall_score = sum(scores) / len(scores)
+    
+    # Determine overall sentiment
+    if overall_score > 0:
+        sentiment = "POSITIVE"
+    elif overall_score < 0:
+        sentiment = "NEGATIVE"
+    else:
+        sentiment = "NEUTRAL"
+    
+    return {
+        "overall_score": round(overall_score, 2),
+        "overall_sentiment": sentiment
+    }
 
 def find_extremes(results: List[Dict[str, int]]) -> Dict[str, Dict[str, int]]:
     if not results:
