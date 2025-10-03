@@ -1,29 +1,29 @@
 from collections import deque
 
 #\backend\app\original\sliding_window.py
-def afinn_sliding_window(scored_sentences):
+def afinn_sliding_window(scored_sentences, k=3):
 
     # Extract data from input dict
     sentences = [(data["text"], data["score"]) for key, data in scored_sentences.items() if key != "overall"]
 
     # Error handling for edge cases
-    if len(sentences) < 3:
-        best_positive = {'text': "[INFO] Input too short to form sliding window of 3.", 'score': 0.0}
-        best_negative = {'text': "[INFO] Input too short to form sliding window of 3.", 'score': 0.0}
-        return best_positive, best_negative
+    if len(sentences) < k:
+        msg = f"[ERROR] Input must contain at least {k} sentences to form a sliding window."
+        return ({"text": msg, "score": 0.0, "indices": None}, {"text": msg, "score": 0.0, "indices": None})
 
-    # Fixed size sliding window of 3 sentences
-    window = deque(maxlen=3)
+    # Fixed size sliding window of k sentences
+    window = deque(maxlen=k)
     running_sum = 0
 
-    # Dict for most positive/negative paragaphs + score
-    best_positive = {'text': "", 'score': float('-inf')}
-    best_negative = {'text': "", 'score': float('inf')}
+    # Dict for most positive/negative paragraphs, score, sentence indices
+    best_positive = {'text': "", 'score': float('-inf'), "indices": None}
+    best_negative = {'text': "", 'score': float('inf'), "indices": None}
 
-    for sentence, score in sentences:
+    # Iterate through sentences with scores
+    for i, (sentence, score) in enumerate(sentences):
 
         # Remove oldest score if window is full
-        if len(window) == 3:
+        if len(window) == k:
             running_sum -= window[0][1]
 
         # Populate window with tuples of sentence + score
@@ -31,17 +31,21 @@ def afinn_sliding_window(scored_sentences):
         running_sum += score
 
         # Save analyzed paragraph & avg score for window
-        if len(window) == 3:
-            avg_score = running_sum / 3
+        if len(window) == k:
+            avg_score = running_sum / k
             joined_text = " ".join(s[0] for s in window)
+            start_idx = i - k + 1
+            end_idx = i
 
             # Assign paragraph & score to dictionary
             if avg_score > best_positive['score']:
                 best_positive['score'] = avg_score
                 best_positive['text'] = joined_text
+                best_positive['indices'] = (start_idx, end_idx)
 
             if avg_score < best_negative['score']:
                 best_negative['score'] = avg_score
                 best_negative['text'] = joined_text
+                best_negative['indices'] = (start_idx, end_idx)
 
     return best_positive, best_negative
