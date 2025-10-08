@@ -116,3 +116,62 @@ def analyze_sliding_windows(scored_sentences, k=3):
                 best_negative['indices'] = (start_idx, end_idx)
 
     return best_positive, best_negative
+
+# (Saad) Dynamic Window Analysis
+def analyze_dynamic_windows(scored_sentences):
+    # Extract data from scored reviews
+    sentences = [(data["text"], data["score"]) for key, data in scored_sentences.items() if key != "overall"]
+    n = len(sentences)
+
+    # Edge case handling (Review length too short)
+    if n < 2:
+        msg = f"[ERROR] Need at least 2 sentences for dynamic analysis (found {n})."
+        return (
+            {"text": msg, "score": 0.0, "indices": None},
+            {"text": msg, "score": 0.0, "indices": None},
+        )
+
+    # Initialize running sum and start indices
+    pos_sum, neg_sum = 0, 0
+    pos_start, neg_start = 0, 0
+
+    # Initialize best segment dictionaries
+    best_positive = {"text": "", "score": float('-inf'), "indices": None}
+    best_negative = {"text": "", "score": float('inf'), "indices": None}
+
+    for i, (text, score) in enumerate(sentences):
+        # --- Positive segment logic ---
+        if score <= 0:
+            # Reset window if negative/neutral sentiment found
+            pos_sum = 0
+            pos_start = i + 1
+        else:
+            pos_sum += score
+            if pos_sum > best_positive["score"]:
+                best_positive["score"] = pos_sum
+                best_positive["text"] = ". ".join(s[0] for s in sentences[pos_start:i+1])
+                best_positive["indices"] = (pos_start, i)
+
+        # --- Negative segment logic ---
+        if score >= 0:
+            # Reset window if positive/neutral sentiment found
+            neg_sum = 0
+            neg_start = i + 1
+        else:
+            neg_sum += score
+            if neg_sum < best_negative["score"]:
+                best_negative["score"] = neg_sum
+                best_negative["text"] = ". ".join(s[0] for s in sentences[neg_start:i+1])
+                best_negative["indices"] = (neg_start, i)
+
+    # Handle cases with no positive/negative sentiment
+    if best_positive["indices"] is None:
+        best_positive["text"] = "[INFO] No positive sentiment found."
+        best_positive["score"] = 0.0
+        best_positive["indices"] = None
+    if best_negative["indices"] is None:
+        best_negative["text"] = "[INFO] No negative sentiment found."
+        best_negative["score"] = 0.0
+        best_negative["indices"] = None
+
+    return best_positive, best_negative

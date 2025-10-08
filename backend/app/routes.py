@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.services.utils import per_sentence_analysis, analyze_text, find_extremes, analyze_sliding_windows
+from app.services.utils import per_sentence_analysis, analyze_text, find_extremes, analyze_sliding_windows, analyze_dynamic_windows
 from app.services.gemini import analyze_sentiment_gemini
 
 router = APIRouter()
@@ -54,6 +54,25 @@ def analyze_sentiment_per_sentence(request: TextRequest):
 #     }
 # ]
 
+# Extremes API
+@router.post("/extremes")
+def extremes(request: TextRequest):
+    sentence_results = per_sentence_analysis(request.text) 
+    extremes_results = find_extremes(sentence_results)      
+    return extremes_results
+
+# example output
+# {
+#     "most_positive": {
+#         "sentence": "I am neutral",
+#         "score": 0
+#     },
+#     "most_negative": {
+#         "sentence": "I am sad",
+#         "score": -2
+#     }
+# }
+
 # Sliding Window API
 @router.post("/sliding_window")
 def sliding_window(request: TextRequest):
@@ -75,21 +94,23 @@ def sliding_window(request: TextRequest):
 #     }
 # }
 
-# Extremes API
-@router.post("/extremes")
-def extremes(request: TextRequest):
-    sentence_results = per_sentence_analysis(request.text) 
-    extremes_results = find_extremes(sentence_results)      
-    return extremes_results
+# Dynamic Window API
+@router.post("/dynamic_window")
+def dynamic_window(request: TextRequest):
+    sentence_results = per_sentence_analysis(request.text)
+    window_results = analyze_dynamic_windows(sentence_results)
+    return window_results
 
 # example output
 # {
-#     "most_positive": {
-#         "sentence": "I am neutral",
-#         "score": 0
+#     "best_positive": {
+#         "text": "This is good. very cool",
+#         "score": 1.00,
+#         "indices": (4, 5) 
 #     },
-#     "most_negative": {
-#         "sentence": "I am sad",
-#         "score": -2
+#     "best_negative": {
+#         "text": "I am sad. this sucks. so bad. very boring",
+#         "score": -2.00,
+#         "indices": (0, 3)
 #     }
 # }
