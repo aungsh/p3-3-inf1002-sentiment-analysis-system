@@ -219,9 +219,48 @@ export default function MovieClient({ reviews }: { reviews: Review[] }) {
                 </CardHeader>
 
                 <CardContent>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed mb-4">
                     {highlightedParts}
                   </p>
+
+                  {/* Show analysis details */}
+                  {analysis && (
+                    <div className="border-t pt-3 mt-3 text-sm space-y-1">
+                      <p className="font-medium text-gray-600 dark:text-gray-300">
+                        {highlightSliding
+                          ? "Sliding Window Segments"
+                          : "Extreme Sentences"}
+                        :
+                      </p>
+
+                      <ul className="list-disc list-inside space-y-1">
+                        {(highlightSliding
+                          ? analysis.sliding_window
+                          : analysis.extremes
+                        )?.map((item, idx) => (
+                          <li
+                            key={idx}
+                            className="text-gray-600 dark:text-gray-400"
+                          >
+                            <span className="italic">{item.text}</span>{" "}
+                            <span className="ml-1 text-xs text-gray-500">
+                              (score: {item.score.toFixed(3)}
+                              {highlightSliding
+                                ? ""
+                                : `, sentiment: ${
+                                    (item as Extreme).sentiment || "N/A"
+                                  }`}
+                              )
+                            </span>
+                          </li>
+                        )) || (
+                          <p className="text-gray-400 italic text-sm">
+                            No segments found.
+                          </p>
+                        )}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
