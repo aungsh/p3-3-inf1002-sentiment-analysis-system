@@ -16,8 +16,9 @@ def tokenize(text: str) -> List[str]:
     return re.findall(r"\b\w+\b", text.lower())
 
 def split_sentences(text: str) -> List[str]:
-    sentences = re.split(r"[.!?]+", text)
+    sentences = re.findall(r'[^.!?]+[.!?]', text)
     return [s.strip() for s in sentences if s.strip()]
+
 
 # Sentiment Scoring
 def sentence_score(sentence: str, afinn: Dict[str, int]) -> int:

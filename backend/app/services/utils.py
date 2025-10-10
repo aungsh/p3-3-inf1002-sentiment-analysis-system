@@ -1,4 +1,3 @@
-from typing import List, Dict, Tuple
 from app.services.sentiment import sentence_score, split_sentences, afinn_dict
 from collections import deque
 
@@ -68,7 +67,7 @@ def find_extremes(sentence_scores):
     return most_positive, most_negative
 
 # (Saad) Sliding Window Analysis
-def analyze_sliding_windows(scored_sentences, k=3):
+def analyze_sliding_windows(scored_sentences, k):
 
     # Extract data from input dict
     sentences = [(data["text"], data["score"]) for key, data in scored_sentences.items() if key != "overall"]

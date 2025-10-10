@@ -15,44 +15,16 @@ def analyze_sentiment_gemini_api(request: TextRequest):
     sentiment, confidence = analyze_sentiment_gemini(request.text)
     return {"sentiment": sentiment, "score": confidence}
 
-# example output
-# {
-#     "sentiment": "neutral", # POSITIVE, NEGATIVE, NEUTRAL
-#     "score": 0.7
-# }
-
 # Sentiment API
 @router.post("/sentiment/analyze")
 def analyze_sentiment(request: TextRequest):
     sentiment, score = analyze_text(request.text)
     return {"sentiment": sentiment, "score": score}
 
-# example output
-# {
-#     "sentiment": "negative",
-#     "score": -3
-# }
-
 @router.post("/sentiment/analyze_sentiment_per_sentence")
 def analyze_sentiment_per_sentence(request: TextRequest):
     results = per_sentence_analysis(request.text)
     return results
-
-# example output
-# [
-#     {
-#         "sentence": "I am sad",
-#         "score": -2
-#     },
-#     {
-#         "sentence": "I am neutral",
-#         "score": 0
-#     },
-#     {
-#         "sentence": "I am chilling",
-#         "score": -1
-#     }
-# ]
 
 # Extremes API
 @router.post("/extremes")
@@ -61,38 +33,16 @@ def extremes(request: TextRequest):
     extremes_results = find_extremes(sentence_results)      
     return extremes_results
 
-# example output
-# {
-#     "most_positive": {
-#         "sentence": "I am neutral",
-#         "score": 0
-#     },
-#     "most_negative": {
-#         "sentence": "I am sad",
-#         "score": -2
-#     }
-# }
+class SlidingWindowRequest(BaseModel):
+    text: str
+    window_size: int = 3
 
 # Sliding Window API
 @router.post("/sliding_window")
-def sliding_window(request: TextRequest):
+def sliding_window(request: SlidingWindowRequest):
     sentence_results = per_sentence_analysis(request.text)
-    window_results = analyze_sliding_windows(sentence_results)
+    window_results = analyze_sliding_windows(sentence_results, request.window_size)
     return window_results
-
-# example output
-# {
-#     "best_positive": {
-#         "text": "I am good. very cool. nice",
-#         "score": 1.00,
-#         "indices": (3, 5) 
-#     },
-#     "best_negative": {
-#         "text": "I am sad. this sucks. so bad",
-#         "score": -2.00,
-#         "indices": (0, 2)
-#     }
-# }
 
 # Dynamic Window API
 @router.post("/dynamic_window")
@@ -101,16 +51,33 @@ def dynamic_window(request: TextRequest):
     window_results = analyze_dynamic_windows(sentence_results)
     return window_results
 
-# example output
-# {
-#     "best_positive": {
-#         "text": "This is good. very cool",
-#         "score": 1.00,
-#         "indices": (4, 5) 
-#     },
-#     "best_negative": {
-#         "text": "I am sad. this sucks. so bad. very boring",
-#         "score": -2.00,
-#         "indices": (0, 3)
-#     }
-# }
+# API to call all functions and return a comprehensive analysis
+@router.post("/full_analysis")
+def full_analysis(request: SlidingWindowRequest):
+    sentence_results = per_sentence_analysis(request.text)
+    extremes_results = find_extremes(sentence_results)
+    sliding_window_results = analyze_sliding_windows(sentence_results, request.window_size)
+    overall_sentiment, overall_score = analyze_text(request.text)
+    
+    return {
+        "overall": {
+            "sentiment": overall_sentiment,
+            "score": overall_score
+        },
+        "per_sentence": sentence_results,
+        "extremes": extremes_results,
+        "sliding_window": sliding_window_results,
+    }
+    
+# @app.post("/wordcloud")
+# def generate_wordcloud(data: dict = Body(...)):
+#     text = data.get("text", "")
+#     words = clean_text(text)
+
+#     # Count top 30 words
+#     freq = Counter(words).most_common(30)
+
+#     # Convert to frontend format
+#     word_list = [{"text": w, "value": c} for w, c in freq]
+
+#     return word_list
