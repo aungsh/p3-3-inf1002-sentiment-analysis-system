@@ -71,10 +71,11 @@ def analyze_sliding_windows(scored_sentences, k):
 
     # Extract data from input dict
     sentences = [(data["text"], data["score"]) for key, data in scored_sentences.items() if key != "overall"]
+    n = len(sentences)
 
-    # Error handling for edge cases
-    if len(sentences) < k:
-        msg = f"[ERROR] Input must contain at least {k} sentences to form a sliding window."
+    # Edge case: Review length too short
+    if n < k:
+        msg = f"[ERROR] Minimum {k} sentences required for sliding window analysis! (found {n})."
         return ({"text": msg, "score": 0.0, "indices": None}, {"text": msg, "score": 0.0, "indices": None})
 
     # Fixed size sliding window of k sentences
@@ -124,7 +125,7 @@ def analyze_dynamic_windows(scored_sentences):
 
     # Edge case handling (Review length too short)
     if n < 2:
-        msg = f"[ERROR] Need at least 2 sentences for dynamic analysis (found {n})."
+        msg = f"[ERROR] Minimum 2 sentences required for dynamic window analysis! (found {n})."
         return (
             {"text": msg, "score": 0.0, "indices": None},
             {"text": msg, "score": 0.0, "indices": None},
@@ -138,7 +139,7 @@ def analyze_dynamic_windows(scored_sentences):
     best_positive = {"text": "", "score": float('-inf'), "indices": None}
     best_negative = {"text": "", "score": float('inf'), "indices": None}
 
-    for i, (text, score) in enumerate(sentences):
+    for i, (_, score) in enumerate(sentences):
         # --- Positive segment logic ---
         if score <= 0:
             # Reset window if negative/neutral sentiment found
@@ -148,7 +149,6 @@ def analyze_dynamic_windows(scored_sentences):
             pos_sum += score
             if pos_sum > best_positive["score"]:
                 best_positive["score"] = pos_sum
-                best_positive["text"] = ". ".join(s[0] for s in sentences[pos_start:i+1])
                 best_positive["indices"] = (pos_start, i)
 
         # --- Negative segment logic ---
@@ -160,15 +160,24 @@ def analyze_dynamic_windows(scored_sentences):
             neg_sum += score
             if neg_sum < best_negative["score"]:
                 best_negative["score"] = neg_sum
-                best_negative["text"] = ". ".join(s[0] for s in sentences[neg_start:i+1])
                 best_negative["indices"] = (neg_start, i)
 
-    # Handle cases with no positive/negative sentiment
-    if best_positive["indices"] is None:
+    # Form most positive segment from indices
+    if best_positive["indices"] is not None:
+        start, end = best_positive["indices"]
+        best_positive["text"] = " ".join(sentences[i][0] for i in range(start, end + 1))
+    else:
+        # Edge case: no positive sentiment found
         best_positive["text"] = "[INFO] No positive sentiment found."
         best_positive["score"] = 0.0
         best_positive["indices"] = None
-    if best_negative["indices"] is None:
+    
+    # Form most negative segment from indices
+    if best_negative["indices"] is not None:
+        start, end = best_negative["indices"]
+        best_negative["text"] = " ".join(sentences[i][0] for i in range(start, end + 1))
+    else:
+        # Edge case: no negative sentiment found
         best_negative["text"] = "[INFO] No negative sentiment found."
         best_negative["score"] = 0.0
         best_negative["indices"] = None
